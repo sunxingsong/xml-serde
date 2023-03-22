@@ -166,12 +166,12 @@ where
         include_schema_location: options.include_schema_location,
     };
 
-    println!("val : {val:?}");
-    println!("val ------------------------ ");
+    // println!("val : {val:?}");
+    // println!("val ------------------------ ");
 
     format_data(&mut writer, &val, &mut state)?;
 
-    println!(" end ------------------------ ");
+    // println!(" end ------------------------ ");
 
     Ok(writer.0)
 }
@@ -215,30 +215,30 @@ fn format_data<W: EventWriter>(
 ) -> Result<(), crate::Error> {
     match val {
         _SerializerData::CData(s) => {
-            println!("CData  ------------------------ ");
+            // println!("CData  ------------------------ ");
             writer.write(xml::writer::XmlEvent::cdata(&match state.raw_output {
                 true => s.to_string(),
                 false => xml::escape::escape_str_pcdata(s).to_string(),
             }))?
         }
         _SerializerData::String(s) => {
-            println!("String  ------------------------ ");
+            // println!("String  ------------------------ ");
             writer.write(xml::writer::XmlEvent::characters(&match state.raw_output {
                 true => s.to_string(),
                 false => xml::escape::escape_str_pcdata(s).to_string(),
             }))?
         }
         _SerializerData::Seq(s) => {
-            println!(" Seq Seq  ------------------------ ");
+            // println!(" Seq Seq  ------------------------ ");
             for d in s {
                 format_data(writer, &d, state)?;
             }
         }
         _SerializerData::Struct { contents, .. } => {
-            println!("SerializerData::Struct : {contents:?}");
-            println!("Struct  ------------------------ ");
+            // println!("SerializerData::Struct : {contents:?}");
+            // println!("Struct  ------------------------ ");
             for (tag, d) in contents {
-                println!("xxxxxxxxxxx");
+                // println!("xxxxxxxxxxx");
                 if *tag == "$valueRaw" {
                     let old_val = state.raw_output;
                     state.raw_output = true;
@@ -320,13 +320,13 @@ fn format_data<W: EventWriter>(
                             }
                         }
                         d => {
-                            println!("Seq");
+                            // println!("Seq");
                             let attrs = match d {
                                 _SerializerData::Struct { attrs, .. } => attrs.to_owned(),
                                 _ => vec![],
                             };
 
-                            println!("attrs: {attrs:?}");
+                            // println!("attrs: {attrs:?}");
                             let attrs = attrs
                                 .iter()
                                 .map(|(attr_k, attr_v)| {
@@ -373,13 +373,10 @@ fn format_data<W: EventWriter>(
                             }
 
                             writer.write(elm)?;
-                            println!("111");
                             format_data(writer, &d, state)?;
-                            println!("222");
                             writer.write(xml::writer::XmlEvent::EndElement {
                                 name: Some(Name::local(&name)),
                             })?;
-                            println!("333");
                             if should_pop {
                                 state.ns_stack.pop();
                             }
