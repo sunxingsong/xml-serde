@@ -23,6 +23,11 @@ pub struct SignatureValue {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct SignatureCopy {
+    #[serde(rename = "{http://www.w3.org/2000/09/xmldsig#}ds:SignedInfo")]
+    pub signed_info: SignedInfo,
+}
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct SignedInfo {
     #[serde(rename = "{http://www.w3.org/2000/09/xmldsig#}ds:CanonicalizationMethod")]
     pub canonicalization_method: CanonicalizationMethod,

@@ -2,8 +2,8 @@
 mod tests {
     use crate::{
         ds::{
-            CanonicalizationMethod, DigestMethod, Reference, SignatureMethod, SignedInfo,
-            Transform, Transforms,
+            CanonicalizationMethod, DigestMethod, Reference, SignatureCopy, SignatureMethod,
+            SignedInfo, Transform, Transforms,
         },
         to_events,
     };
@@ -37,7 +37,11 @@ mod tests {
             id: None,
         };
 
-        let result = to_events(&sign_info).unwrap();
+        let copy_singin = SignatureCopy {
+            signed_info: sign_info,
+        };
+
+        let result = to_events(&copy_singin).unwrap();
 
         println!("result : {result:?}");
     }

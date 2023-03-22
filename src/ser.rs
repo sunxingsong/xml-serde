@@ -156,7 +156,9 @@ where
 {
     let mut writer = ListWriter(vec![]);
     let mut serializer = Serializer;
+
     let val = value.serialize(&mut serializer)?;
+
     let mut state = _SerializerState {
         raw_output: false,
         ns_stack: vec![],
@@ -218,7 +220,7 @@ fn format_data<W: EventWriter>(
         }
         _SerializerData::Seq(s) => {
             for d in s {
-                format_data(writer, &d, state)?;
+                format_data(writer, d, state)?;
             }
         }
         _SerializerData::Struct { contents, .. } => {
@@ -226,12 +228,12 @@ fn format_data<W: EventWriter>(
                 if *tag == "$valueRaw" {
                     let old_val = state.raw_output;
                     state.raw_output = true;
-                    format_data(writer, &d, state)?;
+                    format_data(writer, d, state)?;
                     state.raw_output = old_val;
-                } else if tag.starts_with(&"$value") {
-                    format_data(writer, &d, state)?;
+                } else if tag.starts_with("$value") {
+                    format_data(writer, d, state)?;
                 } else {
-                    let parsed_tag = Tag::from_cow(&tag);
+                    let parsed_tag = Tag::from_cow(tag);
                     let base_name = parsed_tag.e;
                     let name = match parsed_tag.p {
                         Some(p) => format!("{}:{}", p, base_name),
@@ -253,8 +255,8 @@ fn format_data<W: EventWriter>(
                                     .collect::<Vec<_>>();
                                 let mut elm = xml::writer::XmlEvent::start_element(name.as_str());
                                 if state.include_schema_location {
-                                    elm =
-                                        elm.ns("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+                                    // elm =
+                                    //     elm.ns("xsi", "http://www.w3.org/2001/XMLSchema-instance");
                                 }
                                 let mut loc = String::new();
                                 let mut should_pop = false;
@@ -273,14 +275,14 @@ fn format_data<W: EventWriter>(
                                             loc.push_str(&format!("{} {}.xsd", n, last_n));
                                         }
                                         if state.include_schema_location && !loc.is_empty() {
-                                            elm = elm.attr(
-                                                xml::name::Name {
-                                                    namespace: None,
-                                                    local_name: "schemaLocation",
-                                                    prefix: Some("xsi"),
-                                                },
-                                                &loc,
-                                            );
+                                            // elm = elm.attr(
+                                            //     xml::name::Name {
+                                            //         namespace: None,
+                                            //         local_name: "schemaLocation",
+                                            //         prefix: Some("xsi"),
+                                            //     },
+                                            //     &loc,
+                                            // );
                                         }
                                         state.ns_stack.push(n.to_string());
                                         should_pop = true;
@@ -291,7 +293,7 @@ fn format_data<W: EventWriter>(
                                 }
 
                                 writer.write(elm)?;
-                                format_data(writer, &d, state)?;
+                                format_data(writer, d, state)?;
                                 // writer.write(xml::writer::XmlEvent::end_element())?;
                                 writer.write(xml::writer::XmlEvent::EndElement {
                                     name: Some(Name::local(&name)),
@@ -315,7 +317,7 @@ fn format_data<W: EventWriter>(
 
                             let mut elm = xml::writer::XmlEvent::start_element(name.as_str());
                             if state.include_schema_location {
-                                elm = elm.ns("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+                                // elm = elm.ns("xsi", "http://www.w3.org/2001/XMLSchema-instance");
                             }
                             let mut loc = String::new();
                             let mut should_pop = false;
@@ -334,14 +336,14 @@ fn format_data<W: EventWriter>(
                                         loc.push_str(&format!("{} {}.xsd", n, last_n));
                                     }
                                     if state.include_schema_location && !loc.is_empty() {
-                                        elm = elm.attr(
-                                            xml::name::Name {
-                                                namespace: None,
-                                                local_name: "schemaLocation",
-                                                prefix: Some("xsi"),
-                                            },
-                                            &loc,
-                                        );
+                                        // elm = elm.attr(
+                                        //     xml::name::Name {
+                                        //         namespace: None,
+                                        //         local_name: "schemaLocation",
+                                        //         prefix: Some("xsi"),
+                                        //     },
+                                        //     &loc,
+                                        // );
                                     }
                                     state.ns_stack.push(n.to_string());
                                     should_pop = true;
@@ -352,7 +354,7 @@ fn format_data<W: EventWriter>(
                             }
 
                             writer.write(elm)?;
-                            format_data(writer, &d, state)?;
+                            format_data(writer, d, state)?;
                             // writer.write(xml::writer::XmlEvent::end_element())?;
                             writer.write(xml::writer::XmlEvent::EndElement {
                                 name: Some(Name::local(&name)),
@@ -666,11 +668,7 @@ impl<'a> ser::SerializeMap for MapSerializer<'a> {
     fn end(self) -> Result<_SerializerData, Self::Error> {
         Ok(_SerializerData::Struct {
             attrs: vec![],
-            contents: self
-                .keys
-                .into_iter()
-                .map(|(k, v)| (Cow::from(k), v))
-                .collect(),
+            contents: self.keys.into_iter().map(|(k, v)| (k, v)).collect(),
         })
     }
 }
